@@ -1,0 +1,6 @@
+proc glmselect data=WORK.DALLAS_ECON_DATA plots=(criterionpanel);
+	class 'Retail Gasoline Price TX'n / param=glm;
+	model 'Nonfarm Employment Texas'n='Retail Gasoline Price TX'n / 
+		selection=stepwise
+(select=sbc) hierarchy=single;
+run;
