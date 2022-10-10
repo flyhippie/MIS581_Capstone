@@ -1,0 +1,10 @@
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.Dallas_Econ_Data;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.Dallas_Econ_Data; RUN;
+
+
+%web_open_table(WORK.Dallas_Econ_Data);
