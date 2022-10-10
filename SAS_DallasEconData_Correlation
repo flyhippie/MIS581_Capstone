@@ -1,0 +1,5 @@
+proc corr data=WORK.DALLAS_ECON_DATA pearson nosimple noprob 
+		plots=matrix(histogram);
+	var 'Nonfarm Employment Texas'n;
+	with Year;
+run;
