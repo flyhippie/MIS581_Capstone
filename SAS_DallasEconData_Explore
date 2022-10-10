@@ -1,0 +1,90 @@
+options validvarname=any;
+ods noproctitle;
+ods graphics / imagemap=on;
+
+/* Histogram (one-way or two-way) */
+%macro DEHisto(data=, avar=, classVar=);
+	%local i numAVars numCVars cVar cVar1 cVar2;
+	%let numAVars=%Sysfunc(countw(%str(&avar), %str( ), %str(q)));
+	%let numCVars=%Sysfunc(countw(%str(&classVar), %str( ), %str(q)));
+
+	%if(&numAVars>0 & &numCVars>0) %then
+		%do;
+
+			%if(&numCVars=1) %then
+				%do;
+					%let cVar=%scan(%str(&classVar), 1, %str( ), %str(q));
+
+					proc sql noprint;
+						select count(distinct &cVar) into :nrows from &data;
+					quit;
+
+					/* One-way histogram */
+					proc univariate data=&data noprint;
+						var &avar;
+						class &cVar;
+						histogram &avar / nrows=&nrows
+             normal(noprint);
+					run;
+
+				%end;
+			%else
+				%do;
+
+					/* One-way histogram of each class variable */
+                
+					%do i=1 %to %eval(&numCVars);
+						%let cVar=%scan(%str(&classVar), &i, %str( ), %str(q));
+
+						proc sql noprint;
+							select count(distinct &cVar) into :nrows from &data;
+						quit;
+
+						proc univariate data=&data noprint;
+							var &avar;
+							class &cVar;
+							histogram &avar / nrows=&nrows
+                 normal(noprint);
+						run;
+
+					%end;
+
+					/* Two-way histogram */
+                %let cVar1=%scan(%str(&classVar), 1, %str( ), 
+						%str(q));
+					%let cVar2=%scan(%str(&classVar), 2, %str( ), %str(q));
+
+					proc sql noprint;
+						select count(distinct &cVar1) into :nrows from &data;
+					quit;
+
+					proc sql noprint;
+						select count(distinct &cVar2) into :ncols from &data;
+					quit;
+
+					proc univariate data=&data noprint;
+						var &avar;
+						class &cVar1 &cVar2;
+						histogram &avar / nrows=&nrows ncols=&ncols
+             normal(noprint);
+					run;
+
+				%end;
+		%end;
+%mend DEHisto;
+
+%DEHisto(data=WORK.DALLAS_ECON_DATA, avar='Nonfarm Employment Texas'n, 
+	classVar='Existing Single Family Home Sale'n);
+
+proc sort data=WORK.DALLAS_ECON_DATA out=WORK.TempSorted4877;
+	by 'Existing Single Family Home Sale'n;
+run;
+
+proc boxplot data=WORK.TempSorted4877;
+	plot ('Nonfarm Employment Texas'n)*'Existing Single Family Home Sale'n / 
+		boxstyle=schematic;
+run;
+
+proc datasets library=WORK noprint;
+	delete TempSorted4877;
+	run;
