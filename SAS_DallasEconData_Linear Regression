@@ -1,0 +1,16 @@
+proc glmselect data=WORK.DALLAS_ECON_DATA 
+		outdesign(addinputvars)=Work.reg_design;
+	class 'Nonfarm Employment TX'n / param=glm;
+	model Year='Nonfarm Employment TX'n / showpvalues selection=none;
+run;
+
+proc reg data=Work.reg_design alpha=0.05 plots(only)=(diagnostics residuals 
+		observedbypredicted);
+	where 'Nonfarm Employment TX'n is not missing;
+	ods select DiagnosticsPanel ResidualPlot ObservedByPredicted;
+	model Year=&_GLSMOD /;
+	run;
+quit;
+
+proc delete data=Work.reg_design;
+run;
