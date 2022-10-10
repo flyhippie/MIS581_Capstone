@@ -1,0 +1,4 @@
+proc pls data=WORK.DALLAS_ECON_DATA method=pls plots;
+	class 'Existing Single Family Home Pric'n;
+	model 'Nonfarm Employment Texas'n='Existing Single Family Home Pric'n;
+run;
